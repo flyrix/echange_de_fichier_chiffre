@@ -1,0 +1,30 @@
+{
+  "parfait": {
+    "publicKeyJwk": {
+      "alg": "RSA-OAEP-256",
+      "e": "AQAB",
+      "ext": true,
+      "key_ops": [
+        "encrypt"
+      ],
+      "kty": "RSA",
+      "n": "lWSaQF3vC99eIK2H8-YWRHbI48QLfLANGpgx6EL6eJKDmum2DFvlcET5LW9iIw0DC1tR5bd0S_Kwz1cfA8CqyX3K8MoEuxEtfUFK3Yby2X1TAgGOjHAC27-33L4gV23DEURtlS14iRjNXGNiMNxb6PUelMl9BCJA0Um0YNzgqh6aU8e6pRxCKUwhiECxOvusgaYpnKiOayviJEkm-nh3U11HtujU161cK4kJFKTT03OMhWEqus02EDDWreo202Zx4l7mcN0vslZJL4wTrxpREBSPR4jC6-SNRiItBbl9vkCjRT3rFuZns7ItCbJbxihaAqwKa5G5xLmOgx3v_KGOGw"
+    },
+    "fingerprint": "05a0 6cd9 158c 5ef0 28f3 00a8 5f7c 2b93",
+    "registeredAt": 1789988982991
+  },
+  "kacou": {
+    "publicKeyJwk": {
+      "alg": "RSA-OAEP-256",
+      "e": "AQAB",
+      "ext": true,
+      "key_ops": [
+        "encrypt"
+      ],
+      "kty": "RSA",
+      "n": "14d5kEe1fsIA2emdavvff8rV0YbOBCdXwmfiEpC9BBueXhc5zTsHZATQauL9SiAbh8GHR3ZUEVjp6YvO8sIz14SRpBPvdW5QNw2XPeVG9YY0xyX1rUnIDhyhWyRWqLOAxNi5T79U37UK1zKQxBMMl9mtyp4hbGPNdDJgIdnRBC2t8EshFSBDO2EZpMSUQX98ZVjnRL8wv_dFf-wumbsq_HbBXT5cAeh7OVYJLD44rAS5_31zOWh9AcFsdARsJNaS_VClIIeeRnIH2GeZCAT-avAxrwLU0a5whN1pAVwTPI8oA5VLvKHK2F-e0VGSwCbfT7J96hRy-KndKGR3xY9spQ"
+    },
+    "fingerprint": "f67a fe5b 0ce0 c8c8 7d0d c359 5ad8 c515",
+    "registeredAt": 1789988177745
+  }
+}

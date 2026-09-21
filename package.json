@@ -1,0 +1,13 @@
+{
+  "name": "cryptoshare",
+  "version": "1.0.0",
+  "description": "Echange chiffre de fichiers, images et textes entre utilisateurs (TP Cybersecurite)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "share": "sh -c 'node server.js & server_pid=$!; trap \"kill $server_pid 2>/dev/null\" EXIT INT TERM; sleep 1; cloudflared tunnel --url http://localhost:${PORT:-3000}'"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

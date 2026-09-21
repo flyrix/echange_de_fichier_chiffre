@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CryptoShare — échange chiffré</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=4" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">&#9670;</span>
+    <span class="brand-name">CryptoShare</span>
+  </div>
+  <div id="identity-chip" class="identity-chip hidden">
+    <span class="dot"></span>
+    <span id="identity-name"></span>
+    <span id="identity-fingerprint" class="fingerprint"></span>
+  </div>
+  <button id="toggle-steganalysis" class="ghost-btn hidden">Boîte à outils de stéganalyse</button>
+</header>
+
+<!-- ===================== ECRAN DE CONNEXION ===================== -->
+<section id="login-screen" class="login-screen">
+  <div class="login-card">
+    <h1>Ouvrir un canal chiffré</h1>
+    <p class="lede">
+      Choisissez un identifiant. Une paire de clés RSA-2048 est générée
+      localement dans votre navigateur — la clé privée n'est jamais transmise.
+    </p>
+    <form id="login-form">
+      <label for="username-input">Identifiant</label>
+      <input id="username-input" type="text" placeholder="ex. alice" autocomplete="off" required />
+      <button type="submit">Générer mes clés &amp; entrer</button>
+    </form>
+    <p id="login-status" class="status-line"></p>
+  </div>
+</section>
+
+<!-- ===================== APPLICATION PRINCIPALE ===================== -->
+<main id="app-screen" class="app-screen hidden">
+
+  <aside class="panel panel-identity">
+    <h2>Votre empreinte</h2>
+    <p class="fingerprint-display" id="my-fingerprint">— — — — — — — —</p>
+    <p class="hint">
+      Comparez cette empreinte avec votre correspondant par un canal
+      indépendant (téléphone, en personne) pour écarter toute substitution
+      de clé publique.
+    </p>
+
+    <h2>Correspondants connus</h2>
+    <ul id="user-list" class="user-list"></ul>
+  </aside>
+
+  <section class="panel panel-compose">
+    <h2>Nouveau message</h2>
+    <form id="send-form">
+      <label for="recipient-select">Destinataire</label>
+      <select id="recipient-select" required></select>
+
+      <div class="tab-row" role="tablist">
+        <button type="button" class="tab-btn active" data-tab="text">Texte</button>
+        <button type="button" class="tab-btn" data-tab="file">Fichier / image</button>
+        <button type="button" class="tab-btn" data-tab="stego">Stéganographie</button>
+      </div>
+
+      <div class="tab-panel" data-tab-panel="text">
+        <label for="text-input">Message</label>
+        <textarea id="text-input" rows="4" placeholder="Contenu à chiffrer..."></textarea>
+      </div>
+
+      <div class="tab-panel hidden" data-tab-panel="file">
+        <label for="file-input">Fichier ou image</label>
+        <input id="file-input" type="file" />
+      </div>
+
+      <div class="tab-panel hidden" data-tab-panel="stego">
+        <p class="mini-note">
+          Le contenu est <strong>chiffré</strong> puis dissimulé dans un
+          support porteur : image, audio WAV ou vidéo courte.
+        </p>
+
+        <label>Support porteur</label>
+        <div class="tab-row carrier-row" role="tablist">
+          <button type="button" class="carrier-btn active" data-carrier="image">Image</button>
+          <button type="button" class="carrier-btn" data-carrier="audio">Audio WAV</button>
+          <button type="button" class="carrier-btn" data-carrier="video">Vidéo</button>
+        </div>
+
+        <div class="tab-row" role="tablist">
+          <button type="button" class="subtab-btn active" data-subtab="stego-text">Texte à cacher</button>
+          <button type="button" class="subtab-btn" data-subtab="stego-file">Fichier à cacher</button>
+        </div>
+
+        <div class="tab-panel" data-subtab-panel="stego-text">
+          <label for="stego-text-input">Message à dissimuler</label>
+          <textarea id="stego-text-input" rows="3" placeholder="Contenu secret..."></textarea>
+        </div>
+
+        <div class="tab-panel hidden" data-subtab-panel="stego-file">
+          <label for="stego-file-input">Fichier à dissimuler</label>
+          <input id="stego-file-input" type="file" />
+        </div>
+
+        <div class="carrier-panel" data-carrier-panel="image">
+          <label for="cover-image-input">Image de couverture</label>
+          <input id="cover-image-input" type="file" accept="image/*" />
+        </div>
+
+        <div class="carrier-panel hidden" data-carrier-panel="audio">
+          <label for="cover-audio-input">Audio de couverture</label>
+          <input id="cover-audio-input" type="file" accept=".wav,audio/wav,audio/x-wav" />
+          <p class="mini-note">
+            Utilisez un fichier WAV non compressé pour conserver les bits cachés.
+          </p>
+        </div>
+
+        <div class="carrier-panel hidden" data-carrier-panel="video">
+          <label for="cover-video-input">Vidéo de couverture</label>
+          <input id="cover-video-input" type="file" accept="video/*" />
+          <p class="mini-note">
+            Utilisez un fichier <strong>.mp4</strong> (ISO-BMFF) ; la charge
+            chiffrée est insérée comme box supplémentaire au milieu du
+            conteneur (position et nom dérivés de la clé partagée), pas
+            ajoutée en fin de fichier — sans réencoder l'image.
+          </p>
+        </div>
+
+        <label for="stego-shared-key">Clé de dissimulation partagée</label>
+        <input id="stego-shared-key" type="password" autocomplete="off"
+               placeholder="convenue avec le destinataire, hors de ce canal" />
+        <p class="mini-note">
+          Ne transite jamais sur le réseau. Elle pilote l'emplacement et
+          l'ordre des bits modifiés dans le support — sans elle, même en
+          possédant le fichier, impossible de savoir où chercher.
+        </p>
+
+        <p id="stego-capacity" class="mini-note"></p>
+      </div>
+
+      <button type="submit" id="send-btn">Chiffrer &amp; envoyer</button>
+    </form>
+    <p id="send-status" class="status-line"></p>
+    <div id="send-download-area" class="hidden"></div>
+  </section>
+
+  <section class="panel panel-inbox">
+    <h2 id="conversation-title">Dialogue chiffré</h2>
+    <ul id="inbox-list" class="inbox-list">
+      <li class="empty-state">Aucune conversation pour l'instant.</li>
+    </ul>
+  </section>
+
+</main>
+
+<!-- ===================== BOITE A OUTILS DE STEGANALYSE ===================== -->
+<section id="steganalysis-screen" class="steganalysis-screen hidden">
+  <div class="steg-header">
+    <h2>Boîte à outils de stéganalyse</h2>
+    <p class="lede">
+      Analysez n'importe quel fichier (image PNG, audio WAV, vidéo MP4, ou
+      tout autre) pour tenter de détecter statistiquement ou
+      structurellement une dissimulation — sans connaître ni la clé, ni le
+      message. Plusieurs techniques indépendantes sont croisées : plan de
+      bits LSB, χ² de Westfeld-Pfitzmann, test des séries (NIST SP 800-22),
+      ratio de LSB, entropie, cohérence structurelle du conteneur.
+    </p>
+    <input id="steg-analyze-input" type="file" />
+  </div>
+
+  <div id="steg-results" class="steg-results hidden">
+    <div id="steg-image-only" class="hidden">
+      <div class="steg-col">
+        <h3>Fichier analysé</h3>
+        <canvas id="steg-original-canvas"></canvas>
+      </div>
+      <div class="steg-col">
+        <h3>Plan de bits LSB (canal <span id="steg-bitplane-label">bleu</span>)</h3>
+        <canvas id="steg-bitplane-canvas"></canvas>
+        <p class="hint">
+          Du bruit uniforme sur toute la surface suggère une dissimulation LSB ;
+          des motifs ou dégradés résiduels suggèrent un support intact.
+        </p>
+      </div>
+      <div class="steg-col steg-col-wide">
+        <h3>Attaque du χ² de Westfeld-Pfitzmann (canal <span id="steg-chi-label">bleu</span>)</h3>
+        <canvas id="steg-chi-canvas" width="640" height="220"></canvas>
+        <p class="hint">
+          Un plateau soutenu de p élevé sur une portion du fichier, suivi
+          d'une chute nette, est la signature classique d'un embarquement
+          LSB séquentiel non chiffré-diffusé.
+        </p>
+      </div>
+    </div>
+
+    <div class="steg-col steg-col-wide">
+      <h3>Verdict &amp; détail des tests</h3>
+      <div id="steg-report" class="steg-extraction-output"></div>
+    </div>
+
+    <div class="steg-col steg-col-wide">
+      <h3>Tenter une extraction (si vous avez une clé candidate)</h3>
+      <label for="steg-try-key">Clé de dissimulation à essayer</label>
+      <input id="steg-try-key" type="text" autocomplete="off" placeholder="laisser vide pour ne pas essayer" />
+      <button type="button" id="steg-try-extract-btn">Essayer</button>
+      <div id="steg-extraction-output" class="steg-extraction-output"></div>
+    </div>
+  </div>
+</section>
+
+<template id="inbox-item-template">
+  <li class="inbox-item">
+    <div class="inbox-item-head">
+      <span class="from-label"></span>
+      <span class="time-label"></span>
+    </div>
+    <div class="cipher-preview"></div>
+    <div class="inbox-item-actions">
+      <button class="decrypt-btn">Déchiffrer</button>
+      <button class="steganalyze-btn hidden">Analyser (stéganalyse)</button>
+    </div>
+    <div class="decrypted-content hidden"></div>
+  </li>
+</template>
+
+<script src="js/crypto.js?v=3"></script>
+<script src="js/steganography.js?v=3"></script>
+<script src="js/audio-steganography.js?v=2"></script>
+<script src="js/media-container-steganography.js?v=2"></script>
+<script src="js/steganalysis.js?v=3"></script>
+<script src="js/app.js?v=6"></script>
+</body>
+</html>
